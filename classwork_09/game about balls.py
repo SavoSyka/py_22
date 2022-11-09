@@ -31,7 +31,7 @@ counter = 0
 
 # Определение необходимых функций
 def new_ball():
-    '''Создаёт новый шарик со случайным радиусом в случайном месте'''
+    """Создаёт новый шарик со случайным радиусом в случайном месте"""
     x_ball = randint(max_ball_size, display_size[0] - max_ball_size)
     y_ball = randint(max_ball_size, display_size[1] - max_ball_size)
     r_ball = randint(min_ball_size, max_ball_size)
@@ -42,7 +42,7 @@ def new_ball():
 
 
 def get_starting_objects(obj_count=3):
-    '''Создаёт список первых шаров'''
+    """Создаёт список первых шаров"""
     starting_objects = []
     for _ in range(obj_count):
         ball = new_ball()
@@ -51,27 +51,22 @@ def get_starting_objects(obj_count=3):
 
 
 def objects_draw():
-    '''Рисует шары из списка на экране'''
+    """Рисует шары из списка на экране"""
     for object in objects_on_screen:
         circle(screen, *object[:-1])
 
 
-def balls_list():
-    '''Возвращает лист отрисованных объектов'''
-    return objects_on_screen
-
-
 def is_catch(x_ball, y_ball, r):
-    '''Проверяет, есть ли попадание по объекту
+    """Проверяет, есть ли попадание по объекту
     x_ball —  координата центра объекта по оси X
     y_ball — координата центра объекта по оси Y
-    ro — радиус объекта'''
+    ro — радиус объекта"""
     x_mouse, y_mouse = pygame.mouse.get_pos()
     return (x_ball - x_mouse) ** 2 + (y_ball - y_mouse) ** 2 <= r ** 2
 
 
 def is_collision_with_wall(obiect):
-    '''Проверяет, сталкивается ли объект с краем экрана и изменяет направление его движения с учетом ЗСИ'''
+    """Проверяет, сталкивается ли объект с краем экрана и изменяет направление его движения с учетом ЗСИ"""
     if obiect[1][0] + cos(radians(obiect[3])) - obiect[2] < 0:
         obiect[3] = 180 - obiect[3]
     elif obiect[1][0] + cos(radians(obiect[3])) + obiect[2] > display_size[0]:
@@ -83,7 +78,7 @@ def is_collision_with_wall(obiect):
 
 
 def move_objects():
-    '''Перемещает объекты'''
+    """Перемещает объекты"""
     for j in range(len(objects_on_screen)):
         is_collision_with_wall(objects_on_screen[j])
         x_move = cos(radians(objects_on_screen[j][3]))
