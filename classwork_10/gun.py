@@ -16,7 +16,7 @@ WHITE = 0xFFFFFF
 GREY = 0x7D7D7D
 GAME_COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
-WIDTH = 800
+WIDTH = 900
 HEIGHT = 600
 
 
@@ -34,7 +34,7 @@ class Ball:
         self.vx = 0
         self.vy = 0
         self.color = choice(GAME_COLORS)
-        self.live = 30
+        self.live = 2
         self.gravity = gravity
 
     def move(self):
@@ -87,22 +87,44 @@ class Ball:
         else:
             return False
 
+
 class SuperBall(Ball):
-    """Пока недоделанный класс второго типа мишени"""
-    def __init__(self,*args):
+    """Второй тип снарядов"""
+
+    def __init__(self, *args):
         super().__init__(*args)
-        self.r = 30
+        self.r = 5
+        self.color = BLACK
 
-    def draw(self):
-        circle(screen, (199, 199, 0), (self.x, self.y), self.r)
-        rect(screen, (0, 0, 0), (self.x - self.r * 0.5, self.y + self.r * 0.5, self.r, self.r * 0.2))
-        circle(screen, (240, 0, 0), (self.x - self.r * 0.4, self.y - self.r * 0.25), self.r * 0.2)
-        circle(screen, (0, 0, 0), (self.x - self.r * 0.4, self.y - self.r * 0.26), self.r * 0.09)
-        circle(screen, (240, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.15)
-        circle(screen, (0, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.07)
-        line(screen, (0, 0, 0), (self.x - self.r * 0.2, self.y - self.r * 0.5), (self.x - self.r * 0.75, self.y - self.r * 0.7), int(self.r * 0.15))
-        line(screen, (0, 0, 0), (self.x + self.r * 0.1, self.y - self.r * 0.4), (self.x + self.r * 0.65, self.y - self.r * 0.6), int(self.r * 0.15))
+    def death(self):
+        self.r = 0
+        self.x = 2
+        self.y = 528
+        self.r = 1
+        self.vx = 0
+        self.vy = 0
+        self.gravity = 0
 
+    def move(self):
+        if self.x >= 800 - 1.5 * self.r:
+            self.vx = - self.vx
+            self.x = 800 - 1.5 * self.r
+        if self.x <= 1.5 * self.r:
+            self.vx = - self.vx
+            self.x = 1.5 * self.r
+        if self.y >= 530 - 1.6 * self.r:
+            self.y = 530 - 1.5 * self.r
+            self.vy = - self.vy
+        if abs(self.y - 530) > 1.5 * self.r:
+            self.vy += self.gravity
+        self.x += self.vx
+        if abs(self.vy) <= 1 and abs(self.y - 530) <= 1.5 * self.r:
+            self.vy = 0
+            self.y = 530 - 1.5 * self.r
+            self.gravity
+        self.y -= self.vy
+        if abs(self.vy) <= 1:
+            self.live -= 1
 
 
 class Gun:
@@ -122,26 +144,37 @@ class Gun:
         Происходит при отпускании кнопки мыши.
         Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
         """
-        global balls, bullet
-        bullet += 1
-        new_ball = Ball(self.screen)
-        new_ball.r += 5
-        self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
-        new_ball.vx = self.f2_power * math.cos(self.an)
-        new_ball.vy = - self.f2_power * math.sin(self.an)
-        balls.append(new_ball)
-        self.f2_on = False
-        self.f2_power = 10
+        global balls, superballs, bullet
+        if not supra:
+            bullet += 1
+            new_ball = Ball(self.screen)
+            new_ball.r += 5
+            self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
+            new_ball.vx = self.f2_power * math.cos(self.an)
+            new_ball.vy = - self.f2_power * math.sin(self.an)
+            balls.append(new_ball)
+            self.f2_on = False
+            self.f2_power = 10
+        else:
+            bullet += 1
+            new_ball = SuperBall(self.screen)
+            new_ball.r += 5
+            self.an = math.atan2((event.pos[1] - new_ball.y), (event.pos[0] - new_ball.x))
+            new_ball.vx = self.f2_power * math.cos(self.an)
+            new_ball.vy = - self.f2_power * math.sin(self.an)
+            superballs.append(new_ball)
+            self.f2_on = False
+            self.f2_power = 100
 
     def targetting(self, event):
         """Прицеливание. Зависит от положения мыши."""
         if event:
-            if event.pos[0]<=50 and event.pos[1]<=450:
+            if event.pos[0] <= 50 and event.pos[1] <= 450:
                 self.an = -9999999
             elif event.pos[0] <= 50 and event.pos[1] >= 450:
                 self.an = 9999999
             else:
-                self.an = math.atan((event.pos[1] - 450) / (event.pos[0] -50))
+                self.an = math.atan((event.pos[1] - 450) / (event.pos[0] - 50))
         if self.f2_on:
             self.color = RED
         else:
@@ -166,10 +199,19 @@ class Gun:
             self.color = GREY
 
 
-
 class Target:
     """Конструктор класса Target"""
+
     def __init__(self):
+        self.w = None
+        self.phi = None
+        self.rho = None
+        self.color = None
+        self.r = None
+        self.vy = None
+        self.y = None
+        self.x = None
+        self.vx = None
         self.screen = screen
         self.points = 0
         self.live = 1
@@ -183,6 +225,9 @@ class Target:
         self.vx = randint(-10, 10)
         self.vy = randint(-10, 10)
         self.color = RED
+        self.rho = randint(7, 10) * 1.5
+        self.phi = randint(-5, 5)
+        self.w = randint(-2, 2) / 3
 
     def move(self):
         """Переместить мишень по прошествии единицы времени.
@@ -195,8 +240,8 @@ class Target:
         if self.x <= 1.5 * self.r:
             self.vx = -self.vx
             self.x = 1.5 * self.r
-        if self.y >= 530 - self.r:
-            self.y = 530 - self.r
+        if self.y >= 480 - self.r:
+            self.y = 480 - self.r
             self.vy = - self.vy
         if self.y <= 1.5 * self.r:
             self.y = 1.5 * self.r
@@ -214,25 +259,91 @@ class Target:
         pygame.draw.circle(self.screen, BLACK, (self.x, self.y), self.r, 2)
 
 
+class SuperTarget(Target):
+    """Второй тип мишени — рожа"""
+
+    def __int__(self, *args):
+        super().__int__(*args)
+
+    def draw(self):
+        """Рисует рожу"""
+        circle(screen, (199, 199, 0), (self.x, self.y), self.r)
+        rect(screen, (0, 0, 0), (self.x - self.r * 0.5, self.y + self.r * 0.5, self.r, self.r * 0.2))
+        circle(screen, (240, 0, 0), (self.x - self.r * 0.4, self.y - self.r * 0.25), self.r * 0.2)
+        circle(screen, (240, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.15)
+        circle(screen, (0, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.07)
+
+        line(screen, (0, 0, 0), (self.x - self.r * 0.2, self.y - self.r * 0.5),
+             (self.x - self.r * 0.75, self.y - self.r * 0.7),
+             int(self.r * 0.15))
+        line(screen, (0, 0, 0), (self.x + self.r * 0.1, self.y - self.r * 0.4),
+             (self.x + self.r * 0.65, self.y - self.r * 0.6),
+             int(self.r * 0.15))
+
+    def move(self):
+        """Переместить мишень(рожу) по прошествии единицы времени.
+            Метод описывает перемещение мишени за один кадр перерисовки. То есть, обновляет значения
+            self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
+            и стен по краям окна (размер окна 800х600)."""
+        if self.x >= 800 - self.r:
+            self.vx = -self.vx
+            self.x = 800 - self.r
+        if self.x <= 1.5 * self.r:
+            self.vx = -self.vx
+            self.x = 1.5 * self.r
+        if self.y >= 480 - self.r:
+            self.y = 480 - self.r
+            self.vy = - self.vy
+        if self.y <= 1.5 * self.r:
+            self.y = 1.5 * self.r
+            self.vy = - self.vy
+
+        self.x += self.vx
+        self.y += self.vy
+
+        self.x += self.rho * math.cos(self.phi)
+        self.y += self.rho * math.sin(self.phi)
+        self.phi += self.w
+
+
+def stats():
+    """Выводит на экран статистику"""
+    myfont = pygame.font.SysFont("monospace", 20)
+    score_stats = myfont.render(f'Целей уничтожено: {score} ', 1, (0, 0, 0))
+    screen.blit(score_stats, (10, 10))
+    shoots_stats = myfont.render(f'Выпущено шаров: {shoots} ', 1, (0, 0, 0))
+    screen.blit(shoots_stats, (10, 30))
+    if shoots >= 1:
+        accuracy = myfont.render(f'Точность: {(score + superscore) / shoots} ', 1, (0, 0, 0))
+        screen.blit(accuracy, (10, 50))
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 bullet = 0
 balls = []
 superballs = []
+score = 0
+superscore = 0
+shoots = 0
 
 clock = pygame.time.Clock()
 gun = Gun(screen)
 first_target = Target()
-second_target = Target()
+second_target = SuperTarget()
 finished = False
+supra = False
 
 while not finished:
     screen.fill(WHITE)
+    stats()
     gun.draw()
     first_target.draw()
     second_target.draw()
     for b in balls:
+        if b.live > 0:
+            b.draw()
+    for b in superballs:
         if b.live > 0:
             b.draw()
 
@@ -242,10 +353,16 @@ while not finished:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            gun.fire2_start(event)
+            if event.button == 1:
+                gun.fire2_start(event)
+            if event.button == 2:
+                supra = not supra
         elif event.type == pygame.MOUSEBUTTONUP:
-            gun.fire2_end(event)
+            if event.button == 1:
+                gun.fire2_end(event)
+                shoots += 1
         elif event.type == pygame.MOUSEMOTION:
             gun.targetting(event)
 
@@ -254,9 +371,23 @@ while not finished:
         if b.hittest(first_target) and first_target.live:
             first_target.hit()
             first_target.new_target()
+            score += 1
         if b.hittest(second_target) and second_target.live:
             second_target.hit()
             second_target.new_target()
+            score += 1
+    for b in superballs:
+        b.move()
+        if b.hittest(first_target) and first_target.live:
+            first_target.hit()
+            first_target.new_target()
+            b.death()
+            score += 1
+        if b.hittest(second_target) and second_target.live:
+            second_target.hit()
+            second_target.new_target()
+            b.death()
+            score += 1
     gun.power_up()
     first_target.move()
     second_target.move()
