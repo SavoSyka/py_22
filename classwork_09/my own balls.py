@@ -18,6 +18,7 @@ COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 
 class Ball:
+    """Конструктор класса Ball"""
     def __init__(self):
         self.r = randint(15, 100)
         self.x = randint(2 * self.r, 1200 - 2 * self.r)
@@ -106,8 +107,6 @@ def stats():
 
 amount_of_balls = 5  # Начальное количество шаров на экране
 balls = [0] * amount_of_balls  # Список шаров
-for i in range(amount_of_balls):
-    balls[i] = Ball()
 
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -115,10 +114,8 @@ finished = False
 balls_counter = 0  # Счетчик попаданий по шарам
 miss_counter = 0  # Счетчик промахов
 miss = True
-
 amount_of_balls_on_the_display = 5  # Количество шаров на экране
 live = [0] * amount_of_balls  # список "жизней" шаров
-
 wave = 1  # Номер волны шаров
 
 for i in range(amount_of_balls):
@@ -146,7 +143,6 @@ while not finished:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for i in range(amount_of_balls):
                     if balls[i].is_hit():
-                        circle(screen, BLACK, (balls[i].x, balls[i].y), balls[i].r)
                         live[i] = False
                         balls_counter += 1
                         amount_of_balls_on_the_display -= 1
@@ -168,5 +164,4 @@ while not finished:
     score_of_gamer()
     ball_wave()
 
-print(balls_counter, miss_counter)
 pygame.quit()
