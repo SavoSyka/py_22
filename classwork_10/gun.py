@@ -34,7 +34,7 @@ class Ball:
         self.vx = 0
         self.vy = 0
         self.color = choice(GAME_COLORS)
-        self.live = 2
+        self.live = 10
         self.gravity = gravity
 
     def move(self):
@@ -61,10 +61,8 @@ class Ball:
         if abs(self.vy) <= 1 and abs(self.y - 530) <= 1.5 * self.r:
             self.vy = 0
             self.y = 530 - 1.5 * self.r
-            self.gravity
-        self.y -= self.vy
-        if abs(self.vy) == 0:
             self.live -= 1
+        self.y -= self.vy
 
     def draw(self):
         pygame.draw.circle(
@@ -121,7 +119,6 @@ class SuperBall(Ball):
         if abs(self.vy) <= 1 and abs(self.y - 530) <= 1.5 * self.r:
             self.vy = 0
             self.y = 530 - 1.5 * self.r
-            self.gravity
         self.y -= self.vy
         if abs(self.vy) <= 1:
             self.live -= 1
@@ -272,7 +269,6 @@ class SuperTarget(Target):
         circle(screen, (240, 0, 0), (self.x - self.r * 0.4, self.y - self.r * 0.25), self.r * 0.2)
         circle(screen, (240, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.15)
         circle(screen, (0, 0, 0), (self.x + self.r * 0.4, self.y - self.r * 0.3), self.r * 0.07)
-
         line(screen, (0, 0, 0), (self.x - self.r * 0.2, self.y - self.r * 0.5),
              (self.x - self.r * 0.75, self.y - self.r * 0.7),
              int(self.r * 0.15))
@@ -353,7 +349,6 @@ while not finished:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 gun.fire2_start(event)
