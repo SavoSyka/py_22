@@ -65,6 +65,7 @@ class Ball:
         self.y -= self.vy
 
     def draw(self):
+        """Рисует элемент класса Ball на экране"""
         pygame.draw.circle(
             self.screen,
             self.color,
@@ -95,6 +96,7 @@ class SuperBall(Ball):
         self.color = BLACK
 
     def death(self):
+        """'Убивает шарик' — телепортирует шар в левый нижний угол экрана и делает его крошкой """
         self.r = 0
         self.x = 2
         self.y = 528
@@ -104,6 +106,7 @@ class SuperBall(Ball):
         self.gravity = 0
 
     def move(self):
+        """Перемещает шар"""
         if self.x >= 800 - 1.5 * self.r:
             self.vx = - self.vx
             self.x = 800 - 1.5 * self.r
@@ -313,6 +316,15 @@ def stats():
         accuracy = myfont.render(f'Точность: {(score + superscore) / shoots} ', 1, (0, 0, 0))
         screen.blit(accuracy, (10, 50))
 
+def instructions():
+    """Выводит на экран инструкции"""
+    myfont = pygame.font.SysFont("monospace", 10)
+    skm = myfont.render('Для смены снаряда нажмите среднюю кнопку мыши', 1, (0, 0, 0))
+    screen.blit(skm, (600, 575))
+    lkm = myfont.render('Для выстрела нажмите левую кнопку мыши ', 1, (0, 0, 0))
+    screen.blit(lkm, (600, 585))
+
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -333,6 +345,7 @@ supra = False
 while not finished:
     screen.fill(WHITE)
     stats()
+    instructions()
     gun.draw()
     first_target.draw()
     second_target.draw()
